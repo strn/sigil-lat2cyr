@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin>
-    <name>la2cy</name>
+    <name>lat2cyr</name>
     <type>edit</type>
     <author>Puramoca021</author>
     <description>Converts Croatian Latin script to Serbian Cyrillic</description>
     <engine>python3.4</engine>
-    <version>1.0.0</version>
+    <version>#VERSIONPLACEHOLDER#</version>
     <autostart>false</autostart>
     <autoclose>false</autoclose>
     <oslist>unx,win,osx</oslist>
