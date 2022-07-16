@@ -18,8 +18,9 @@ ALLOWED_ATTRIBS = {
 	'table' : ('align', 'bgcolor', 'border', 'cellpadding', 'cellspacing', 'frame', 'rules', 'sortable', 'summary', 'width',),
 	'td' : ('abbr', 'align', 'axis', 'bgcolor', 'char', 'charoff', 'colspan', 'headers', 'height', 'nowrap', 'rowspan', 'scope', 'valign', 'width',) + GLOBAL_HTML4_ATTRS,
 	'tr' : ('align', 'bgcolor', 'char', 'charoff', 'valign',) + GLOBAL_HTML4_ATTRS,
-	'img' : ( 'alt', 'class', 'ismap', 'src', 'style', 'width',) + GLOBAL_HTML4_ATTRS,
-	'svg' : ( 'xmlns', 'xmlns:link', 'height', 'version', 'width',)
+	'img' : ('alt', 'class', 'ismap', 'src', 'style', 'width',) + GLOBAL_HTML4_ATTRS,
+	'svg' : ('xmlns', 'xmlns:link', 'height', 'version', 'width',),
+    'image' : ('xlink:href', 'height', 'width')
 }
 # Dictionary that says what attribute can be added to what tag, if missing
 ADD_IF_MISSING_ATTRS = {
@@ -68,12 +69,13 @@ def html_lat2cyr(tree, cyr, doctype):
         if elem.tag in ALLOWED_ATTRIBS.keys():
             for attr in elem.attrib.keys():
                 if attr not in ALLOWED_ATTRIBS[elem.tag]:
-                    del elem.attrib[ attr ]
+                    del elem.attrib[attr]
         if elem.tag == 'html':
             # Replace existing 'lang' and 'xml:lang' attributes
             elem.attrib['lang'] = 'sr'
             elem.attrib['xml:lang'] = 'sr'
-
+        elif elem.tag == 'svg' and 'xmlns:xlink' not in elem.attrib.keys():
+            elem.attrib['xmlns:xlink'] = 'http://www.w3.org/1999/xlink'
     if not has_translit_comment(tree):
         tree.append(etree.Comment(f"Пресловљено програмом-додатком '{MODNAME}'; време: {ts}"))
     return etree.tostring(tree, pretty_print=True, xml_declaration=True,
