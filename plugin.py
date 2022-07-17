@@ -79,8 +79,11 @@ def html_lat2cyr(tree, cyr, doctype):
             elem.attrib['xmlns:xlink'] = 'http://www.w3.org/1999/xlink'
     if not has_translit_comment(tree):
         tree.append(etree.Comment("Пресловљено програмом-додатком '%s'; време %s" % (MODNAME, ts)))
-    return etree.tostring(tree, pretty_print=True, xml_declaration=True,
-        doctype=doctype, encoding='utf-8').strip()
+    try:
+        etree.indent(tree, space='  ')
+    except:
+        pass
+    return etree.tostring(tree, xml_declaration=True, doctype=doctype, encoding='utf-8')
 
 
 def has_translit_comment(tree):
@@ -118,7 +121,11 @@ def xml_lat2cyr(tree, cyr, doctype=None):
             elem.text = 'sr'
     if not has_translit_comment(tree):
         tree.append(etree.Comment("Пресловљено програмом-додатком '%s'; време %s" % (MODNAME, ts)))
-    return etree.tostring(tree, pretty_print=True, xml_declaration=True, encoding='utf-8', doctype=doctype).strip()
+    try:
+        etree.indent(tree, space='  ')
+    except:
+        pass
+    return etree.tostring(tree, xml_declaration=True, encoding='utf-8', doctype=doctype)
 
 
 def translit_toc(bk, xml_parser, cyr):
@@ -152,7 +159,8 @@ def translit_pages(bk, html_parser, cyr):
 def show_system_info(launcher_version, epub_version):
     print("*** Системске информације - не утичу на рад програма ***")
     print("* Операт. систем:", platform.system(), platform.release())
-    print("* Питон:", platform.python_version())
+    print("* Питон (Python):", platform.python_version())
+    print("* LXML eTree:", etree.__version__)
     print("* Сигил:", launcher_version)
     print("* ЕПУБ:", epub_version)
     print("*******")
