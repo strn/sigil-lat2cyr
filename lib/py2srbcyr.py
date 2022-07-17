@@ -317,6 +317,7 @@ class SerbCyr:
         "home",
         "ii",
         "iii",
+        "iv",
         "idj",
         "idjtv",
         "life",
@@ -331,6 +332,7 @@ class SerbCyr:
         "reserved",
         "terms",
         "url",
+        "v", # In Serbian language this is not a word, unlike in Russian
         "vii",
         "viii",
         "visa"

@@ -5,11 +5,12 @@
 from   datetime  import datetime
 from   lxml      import etree
 import lib.py2srbcyr as pycir
+import platform
 
 # Global variables
 MODNAME = 'Lat2Cyr'
 # HTML tags that can contain text requireing transliteration
-HTML_TAGS = ('a', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'img', 'p', 'br', 'b', 'i', 'em', 'span', 'sub', 'sup', 'title', 'th', 'td', 'li', 'strong', 'u')
+HTML_TAGS = ('a', 'div', 'font', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'img', 'p', 'br', 'b', 'i', 'em', 'span', 'sub', 'sup', 'title', 'th', 'td', 'li', 'strong', 'u')
 GLOBAL_HTML4_ATTRS = ('accesskey', 'class', 'dir', 'id', 'lang', 'style', 'tabindex', 'title',)
 # Dictionary that specifies which attributes are supported by which HTML tags
 ALLOWED_ATTRIBS = {
@@ -77,9 +78,9 @@ def html_lat2cyr(tree, cyr, doctype):
         elif elem.tag == 'svg' and 'xmlns:xlink' not in elem.attrib.keys():
             elem.attrib['xmlns:xlink'] = 'http://www.w3.org/1999/xlink'
     if not has_translit_comment(tree):
-        tree.append(etree.Comment(f"Пресловљено програмом-додатком '{MODNAME}'; време: {ts}"))
+        tree.append(etree.Comment("Пресловљено програмом-додатком '%s'; време %s" % (MODNAME, ts)))
     return etree.tostring(tree, pretty_print=True, xml_declaration=True,
-        doctype=doctype, encoding='utf-8')
+        doctype=doctype, encoding='utf-8').strip()
 
 
 def has_translit_comment(tree):
@@ -116,8 +117,8 @@ def xml_lat2cyr(tree, cyr, doctype=None):
         elif tag == 'language':
             elem.text = 'sr'
     if not has_translit_comment(tree):
-        tree.append(etree.Comment(f"Пресловљено програмом-додатком '{MODNAME}'; време {ts}"))
-    return etree.tostring(tree, pretty_print=True, xml_declaration=True, encoding='utf-8', doctype=doctype)
+        tree.append(etree.Comment("Пресловљено програмом-додатком '%s'; време %s" % (MODNAME, ts)))
+    return etree.tostring(tree, pretty_print=True, xml_declaration=True, encoding='utf-8', doctype=doctype).strip()
 
 
 def translit_toc(bk, xml_parser, cyr):
@@ -127,7 +128,7 @@ def translit_toc(bk, xml_parser, cyr):
     tree = etree.XML(source.encode('utf-8'), xml_parser)
     transliterated = xml_lat2cyr(tree, cyr, NCX_DOCTYPE)
     bk.writefile(ncx_id, transliterated)
-    print(f"Пресловљен садржај књиге")
+    print("Пресловљен садржај књиге")
 
 
 def translit_metadata(bk, xml_parser, cyr):
@@ -135,7 +136,7 @@ def translit_metadata(bk, xml_parser, cyr):
     tree = etree.XML(source.encode('utf-8'), xml_parser)
     transliterated = xml_lat2cyr(tree, cyr)
     bk.setmetadataxml(transliterated)
-    print(f"Пресловљени метаподаци у датотеци 'content.opf'")
+    print("Пресловљени метаподаци у датотеци 'content.opf'")
 
 
 def translit_pages(bk, html_parser, cyr):
@@ -146,14 +147,22 @@ def translit_pages(bk, html_parser, cyr):
         tree = etree.HTML(source.encode('utf-8'), html_parser)
         transliterated = html_lat2cyr(tree, cyr, HTML_DOCTYPE)
         bk.writefile(id, transliterated)
-        print(f"Пресловљена датотека '{href}'")
+        print("Пресловљена датотека '%s'" % (href))
 
+def show_system_info(launcher_version, epub_version):
+    print("*** Системске информације - не утичу на рад програма ***")
+    print("* Операт. систем:", platform.system(), platform.release())
+    print("* Питон:", platform.python_version())
+    print("* Сигил:", launcher_version)
+    print("* ЕПУБ:", epub_version)
+    print("*******")
 
 def run(bk):
     cyr = pycir.SerbCyr()
     html_parser = etree.HTMLParser(remove_blank_text=True, remove_comments=False, encoding='utf-8')
     xml_parser = etree.XMLParser(remove_blank_text=True, remove_comments=False, encoding='utf-8')
 
+    show_system_info(bk.launcher_version(), bk.epub_version())
     print("Пресловљавање ЕПУБ-а на српску ћирилицу...")
     translit_toc(bk, xml_parser, cyr)
     translit_metadata(bk, xml_parser, cyr)
