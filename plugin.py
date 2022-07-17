@@ -165,7 +165,8 @@ def run(bk):
     try:
         epub_version = bk.epub_version()
     except:
-        epub_version = "Непостојећа функција 'epub_version()' у овој верзији Сигил-а"
+        print("ПАЖЊА: Непостојећа функција 'epub_version()' у овој верзији Сигил-а")
+        epub_version = "Непозната верзија"
     show_system_info(bk.launcher_version(), epub_version)
     print("Пресловљавање ЕПУБ-а на српску ћирилицу...")
     translit_toc(bk, xml_parser, cyr)
