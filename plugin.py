@@ -162,7 +162,11 @@ def run(bk):
     html_parser = etree.HTMLParser(remove_blank_text=True, remove_comments=False, encoding='utf-8')
     xml_parser = etree.XMLParser(remove_blank_text=True, remove_comments=False, encoding='utf-8')
 
-    show_system_info(bk.launcher_version(), bk.epub_version())
+    try:
+        epub_version = bk.epub_version()
+    except:
+        epub_version = "Непостојећа функција 'epub_version()' у овој верзији Сигил-а"
+    show_system_info(bk.launcher_version(), epub_version)
     print("Пресловљавање ЕПУБ-а на српску ћирилицу...")
     translit_toc(bk, xml_parser, cyr)
     translit_metadata(bk, xml_parser, cyr)
