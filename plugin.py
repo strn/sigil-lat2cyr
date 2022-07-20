@@ -83,7 +83,8 @@ def html_lat2cyr(tree, cyr, doctype):
         etree.indent(tree, space='  ')
     except:
         pass
-    return etree.tostring(tree, xml_declaration=True, doctype=doctype, encoding='utf-8')
+    retstr = etree.tostring(tree, xml_declaration=True, doctype=doctype, encoding='utf-8')
+    return retstr.decode('utf-8').replace(u'\u200c', '').encode('utf-8')
 
 
 def has_translit_comment(tree):
@@ -125,7 +126,8 @@ def xml_lat2cyr(tree, cyr, doctype=None):
         etree.indent(tree, space='  ')
     except:
         pass
-    return etree.tostring(tree, xml_declaration=True, encoding='utf-8', doctype=doctype)
+    retstr = etree.tostring(tree, xml_declaration=True, encoding='utf-8', doctype=doctype)
+    return retstr.decode('utf-8').replace(u'\u200c', '').encode('utf-8')
 
 
 def translit_toc(bk, xml_parser, cyr):
