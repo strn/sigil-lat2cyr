@@ -38,16 +38,30 @@ NCX_DOCTYPE = """<!DOCTYPE ncx PUBLIC "-//NISO//DTD ncx 2005-1//EN"
 """
 
 
+# Removes unnecessery HTML characters
+def remove_special_html_chars(stri):
+    return stri.replace('&#173;', '').replace('&shy;', '').replace('&', '&amp;')
+
+
+# Remove 0-width non-joiner character
+def remove_0width_non_joiner(tree, doctype):
+    retstr = etree.tostring(tree, xml_declaration=True, encoding='utf-8', doctype=doctype)
+    return retstr.decode('utf-8').replace(u'\u200c', '').replace('&amp;', '&').encode('utf-8')
+
+
 # Core function that converts text in HTML elements
 # from Croatian Latin into Serbian Cyrillic script
-def html_lat2cyr(tree, cyr, doctype):
+def html_lat2cyr(source, cyr, doctype, html_parser):
     ts = datetime.now().strftime("%Y-%m-%d %H:%M")
+    ret = remove_special_html_chars(source)
+    tree = etree.HTML(ret.encode('utf-8'), html_parser)
+
     # Add META tag with correct encoding
     meta_el = tree.xpath("//meta[@charset or @content]")
     if not meta_el:
         # Add META tags that define content
         head_elem = tree.find('head')
-        if head_elem is not None:
+        if head_elem:
             metachr = etree.SubElement(head_elem, 'meta')
             metachr.set(u'http-equiv', u"content-type")
             metachr.set(u'content', u"text/html; charset=utf-8")
@@ -56,9 +70,9 @@ def html_lat2cyr(tree, cyr, doctype):
     # Walk over tree, changing text nodes
     for elem in tree.getiterator():
         if elem.tag in HTML_TAGS:
-            if elem.text is not None:
+            if elem.text:
                 elem.text = cyr.text_to_cyrillic(elem.text)
-            if elem.tail is not None:
+            if elem.tail:
                 elem.tail = cyr.text_to_cyrillic(elem.tail)
         if elem.tag in ADD_IF_MISSING_ATTRS:
             for (attr, values) in ADD_IF_MISSING_ATTRS.items():
@@ -83,8 +97,8 @@ def html_lat2cyr(tree, cyr, doctype):
         etree.indent(tree, space='  ')
     except:
         pass
-    retstr = etree.tostring(tree, xml_declaration=True, doctype=doctype, encoding='utf-8')
-    return retstr.decode('utf-8').replace(u'\u200c', '').encode('utf-8')
+    # Remove transliteration leftovers
+    return remove_0width_non_joiner(tree, doctype)
 
 
 def has_translit_comment(tree):
@@ -96,8 +110,11 @@ def has_translit_comment(tree):
 
 # Core function that converts text in XML elements
 # from Croatian Latin into Serbian Cyrillic script
-def xml_lat2cyr(tree, cyr, doctype=None):
+def xml_lat2cyr(source, cyr, doctype=None, xml_parser=None):
     ts = datetime.now().strftime("%Y-%m-%d %H:%M")
+    ret = remove_special_html_chars(source)
+    tree = etree.XML(ret.encode('utf-8'), xml_parser)
+
     # Walk over tree, changing text nodes
     for elem in tree.getiterator():
         # Remove namespace
@@ -111,7 +128,7 @@ def xml_lat2cyr(tree, cyr, doctype=None):
             tag = elem.tag
 
         if tag in EBOOK_TAGS:
-            if elem.text is not None:
+            if elem.text:
                 elem.text = cyr.text_to_cyrillic(elem.text)
             # Convert some attributes
             if tag == 'meta' and 'name' in elem.attrib.keys():
@@ -126,37 +143,32 @@ def xml_lat2cyr(tree, cyr, doctype=None):
         etree.indent(tree, space='  ')
     except:
         pass
-    retstr = etree.tostring(tree, xml_declaration=True, encoding='utf-8', doctype=doctype)
-    return retstr.decode('utf-8').replace(u'\u200c', '').encode('utf-8')
+    return remove_0width_non_joiner(tree, doctype)
 
 
 def translit_toc(bk, xml_parser, cyr):
     # Transliterate ToC
     ncx_id = bk.gettocid()
     source = bk.readfile(ncx_id)
-    tree = etree.XML(source.encode('utf-8'), xml_parser)
-    transliterated = xml_lat2cyr(tree, cyr, NCX_DOCTYPE)
+    transliterated = xml_lat2cyr(source, cyr, doctype=NCX_DOCTYPE, xml_parser=xml_parser)
     bk.writefile(ncx_id, transliterated)
-    print("Пресловљен садржај књиге")
+    print("Пресловљен садржај књиге (toc.ncx)")
 
 
 def translit_metadata(bk, xml_parser, cyr):
     source = bk.getmetadataxml()
-    tree = etree.XML(source.encode('utf-8'), xml_parser)
-    transliterated = xml_lat2cyr(tree, cyr)
+    transliterated = xml_lat2cyr(source, cyr, xml_parser=xml_parser)
     bk.setmetadataxml(transliterated)
-    print("Пресловљени метаподаци у датотеци 'content.opf'")
+    print("Пресловљени метаподаци садржаја (content.opf)")
 
 
 def translit_pages(bk, html_parser, cyr):
     for (id, href,) in bk.text_iter():
-        # Ugly hack to preserve &nbsp; in HTML file
-        # after encoding to UTF-8 for parser
-        source = bk.readfile(id).replace('&nbsp;', '&#9208;')
-        tree = etree.HTML(source.encode('utf-8'), html_parser)
-        transliterated = html_lat2cyr(tree, cyr, HTML_DOCTYPE)
+        source = bk.readfile(id)
+        transliterated = html_lat2cyr(source, cyr, HTML_DOCTYPE, html_parser)
         bk.writefile(id, transliterated)
         print("Пресловљена датотека '%s'" % (href))
+
 
 def show_system_info(launcher_version, epub_version):
     print("*** Системске информације - не утичу на рад програма ***")
@@ -170,7 +182,7 @@ def show_system_info(launcher_version, epub_version):
 def run(bk):
     cyr = pycir.SerbCyr()
     html_parser = etree.HTMLParser(remove_blank_text=True, remove_comments=False, encoding='utf-8')
-    xml_parser = etree.XMLParser(remove_blank_text=True, remove_comments=False, encoding='utf-8')
+    xml_parser = etree.XMLParser(remove_blank_text=True, remove_comments=False, resolve_entities=False, encoding='utf-8')
 
     try:
         epub_version = bk.epub_version()
@@ -182,7 +194,6 @@ def run(bk):
     translit_toc(bk, xml_parser, cyr)
     translit_metadata(bk, xml_parser, cyr)
     translit_pages(bk, html_parser, cyr)
-    print("Завршено - не заборавите да 'ручно' замените: '⏸' са '&\u200Cnbsp;' у целом ЕПУБ-у!")
     return 0
 
 
