@@ -128,12 +128,14 @@ class SerbCyr:
         "celishod",
         "četrdesettrogodiš",
         "ddor",
+        "dosjee",
         "dss",
         "devedesettrogodiš",
         "dvadesettrog",
         "epp",
         "fss",
         "gss",
+        "hiperrealizam",
         "interreakc",
         "interresor",
         "intervjuu",
@@ -400,7 +402,6 @@ class SerbCyr:
         'kk',
         'll',
         'ly',
-        'mm',
         'nn',
         'ny',
         'ph',
@@ -428,6 +429,11 @@ class SerbCyr:
         '©',
         '®',
         '™'
+    ]
+
+    _triple_character_combinations = [
+        "aaa", "ccc", "čč", "ćć", "eee", "fff", "hhh", "iii", "mmm",
+        "ooo", "ppp", "rrr", "sss", "šš", "ttt", "uuu", "vvv", "zzz", "žž"
     ]
 
     _digraph_exceptions = {
@@ -749,6 +755,9 @@ class SerbCyr:
         if self._word_starts_with(word, self._serbian_words_with_foreign_character_combinations):
             return False
 
+        if self._word_contains_string(word, self._triple_character_combinations):
+            return False
+
         if self._word_contains_string(word, self._foreign_character_combinations):
             return True
 
@@ -810,7 +819,9 @@ class SerbCyr:
 
     def _word_contains_measurement_unit(self, word):
         unit_adjacent_to_sth = "([zafpnμmcdhKMGTPEY]?([BVWJFSHCΩATNhlmg]|m[²³]?|s[²]?|cd|Pa|Wb|Hz))"
-        unit_optionaly_adjacent_to_sth = "(°[FC]|[kMGTPZY](B|Hz)|[pnμmcdhk]m[²³]?|m[²³]|[mcdh][lg]|kg|km)"
+        # Removed prefix "h" (hecto-) for meters to allow transliteration of "hm", which is
+        # expression of confusion in Serbian language
+        unit_optionaly_adjacent_to_sth = "(°[FC]|[kMGTPZY](B|Hz)|[pnμmcdk]m[²³]?|m[²³]|[mcdh][lg]|kg|km)"
         number = "(\d+([\.,]\d)*)"
         regExp = "^(" + number + unit_adjacent_to_sth + ")|(" \
             + number + "?(" + unit_optionaly_adjacent_to_sth + "|" \

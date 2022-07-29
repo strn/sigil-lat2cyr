@@ -7,6 +7,7 @@ from   lxml      import etree
 import lib.py2srbcyr as pycir
 import platform
 
+
 # Global variables
 MODNAME = 'Lat2Cyr'
 # HTML tags that can contain text requireing transliteration
