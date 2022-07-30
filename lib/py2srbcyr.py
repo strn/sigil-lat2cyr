@@ -432,7 +432,7 @@ class SerbCyr:
     ]
 
     _triple_character_combinations = [
-        "aaa", "ccc", "čč", "ćć", "eee", "fff", "hhh", "iii", "mmm",
+        "aaa", "ccc", "čč", "ćć", "eee", "fff", "hhh", "mmm",
         "ooo", "ppp", "rrr", "sss", "šš", "ttt", "uuu", "vvv", "zzz", "žž"
     ]
 

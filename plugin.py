@@ -192,9 +192,12 @@ def run(bk):
         epub_version = "Непозната верзија"
     show_system_info(bk.launcher_version(), epub_version)
     print("Пресловљавање ЕПУБ-а на српску ћирилицу...")
+    start = datetime.now()
     translit_toc(bk, xml_parser, cyr)
     translit_metadata(bk, xml_parser, cyr)
     translit_pages(bk, html_parser, cyr)
+    end = datetime.now()
+    print("Трајање пресловљавања: %f секунди" % (end - start).total_seconds())
     return 0
 
 
