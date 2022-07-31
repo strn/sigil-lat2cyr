@@ -812,22 +812,41 @@ class SerbCyr:
         }
     }
 
+    C_LINE_ENDINGS = ('\r\n', '\n',)
+
+
     def __init__(self):
         self.lat_regex = re.compile('|'.join(map(re.escape, self._cyrillic_to_latin)))
+
+
+    def join(self, stri):
+        s = ''
+        for word in stri:
+            if word not in self.C_LINE_ENDINGS:
+                s = s + word + " "
+            else:
+                s = s.strip(' ')
+                s = s + word
+        return s.strip(' ')
+
 
     # Main method that converts Latin text to Cyrillic
     def text_to_cyrillic(self, text):
         if len(text.strip()) == 0:
             return text
-        words = re.split('\s+', text)
+        words = re.findall('\S+|\r\n|\n', text)
+
         for i in range(len(words)):
+            if words[i] in self.C_LINE_ENDINGS:
+                continue
             index = self._transliteration_index_of_word_starts_with(words[i], self._whole_foreign_words, "-")
             if index >= 0:
                 words[i] = words[i][:index] + self._word_to_cyrillic(words[i][index:])
             else:
                 if not self._looks_like_foreign_word(words[i]):
                     words[i] = self._word_to_cyrillic(words[i])
-        return ' '.join(words)
+        
+        return self.join(words)
 
 
     def text_to_latin(self, text):
