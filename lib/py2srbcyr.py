@@ -210,6 +210,7 @@ class SerbCyr:
         "dss",
         "devedesettrogodiš",
         "dvadesettrog",
+        "ekshum", # ексхумација, ексхумирати
         "epp",
         "fss",
         "gss",
@@ -227,6 +228,7 @@ class SerbCyr:
         "llsls",
         "metjuu",
         "mmf",
+        "multietni", # multietni-
         "naddu",
         "natha",
         "natho",
@@ -394,6 +396,7 @@ class SerbCyr:
         "back",
         "bitcoin",
         "blue",
+        "cartoon",
         "celebrities",
         "conditions",
         "co2",
