@@ -20,32 +20,32 @@ class SerbCyr:
         "Dј": "Ђ", # D + cyrillic j
         "LJ": "Љ",
         "LЈ": "Љ", # L + cyrillic J
-        "Ǉ":  "Љ",
+        "Ǉ" : "Љ",
         "Lj": "Љ",
         "Lј": "Љ", # L + cyrillic j
-        "ǈ":  "Љ",
+        "ǈ" : "Љ",
         "NJ": "Њ",
         "NЈ": "Њ", # N + cyrillic J
-        "Ǌ":  "Њ",
+        "Ǌ" : "Њ",
         "Nj": "Њ",
         "Nј": "Њ", # N + cyrillic j
-        "ǋ":  "Њ",
+        "ǋ" : "Њ",
         "DŽ": "Џ",
-        "Ǆ":  "Џ",
+        "Ǆ" : "Џ",
         "DŽ": "Џ", # D + Z with caron
         "Dž": "Џ",
-        "ǅ":  "Џ",
+        "ǅ" : "Џ",
         "Dž": "Џ", # D + z with caron
         "dj": "ђ",
         "dј": "ђ", # d + cyrillic j
         "lj": "љ",
         "lј": "љ", # l + cyrillic j
-        "ǉ":  "љ",
+        "ǉ" : "љ",
         "nj": "њ",
         "nј": "њ", # n + cyrillic j
-        "ǌ":  "њ",
+        "ǌ" : "њ",
         "dž": "џ",
-        "ǆ":  "џ",
+        "ǆ" : "џ",
         "dž": "џ", # d + z with caron
         "A":  "А",
         "B":  "Б",
@@ -119,6 +119,84 @@ class SerbCyr:
         "š":  "ш", # s with caron
     }
 
+    _cyrillic_to_latin = {
+        'Ња' : 'Nja',
+        'Ње' : 'Nje',
+        'Њи' : 'Nji',
+        'Њо' : 'Njo',
+        'Њу' : 'Nju',
+        'Ља' : 'Lja',
+        'Ље' : 'Lje',
+        'Љи' : 'Lji',
+        'Љо' : 'Ljo',
+        'Љу' : 'Lju',
+        'Џа' : 'Dža',
+        'Џе' : 'Dže',
+        'Џи' : 'Dži',
+        'Џо' : 'Džo',
+        'Џу' : 'Džu',
+        'А'  : 'A',
+        'Б'  : 'B',
+        'В'  : 'V',
+        'Г'  : 'G',
+        'Д'  : 'D',
+        'Ђ'  : 'Đ',
+        'Е'  : 'E',
+        'Ж'  : 'Ž',
+        'З'  : 'Z',
+        'И'  : 'I',
+        'Ј'  : 'J',
+        'К'  : 'K',
+        'Л'  : 'L',
+        'Љ'  : 'LJ',
+        'М'  : 'M',
+        'Н'  : 'N',
+        'Њ'  : 'NJ',
+        'О'  : 'O',
+        'П'  : 'P',
+        'Р'  : 'R',
+        'С'  : 'S',
+        'Т'  : 'T',
+        'Ћ'  : 'Ć',
+        'У'  : 'U',
+        'Ф'  : 'F',
+        'Х'  : 'H',
+        'Ц'  : 'C',
+        'Ч'  : 'Č',
+        'Џ'  : 'DŽ',
+        'Ш'  : 'Š',
+        'а'  : 'a',
+        'б'  : 'b',
+        'в'  : 'v',
+        'г'  : 'g',
+        'д'  : 'd',
+        'ђ'  : 'đ',
+        'е'  : 'e',
+        'ж'  : 'ž',
+        'з'  : 'z',
+        'и'  : 'i',
+        'ј'  : 'j',
+        'к'  : 'k',
+        'л'  : 'l',
+        'љ'  : 'lj',
+        'м'  : 'm',
+        'н'  : 'n',
+        'њ'  : 'nj',
+        'о'  : 'o',
+        'п'  : 'p',
+        'р'  : 'r',
+        'с'  : 's',
+        'т'  : 't',
+        'ћ'  : 'ć',
+        'у'  : 'u',
+        'ф'  : 'f',
+        'х'  : 'h',
+        'ц'  : 'c',
+        'ч'  : 'č',
+        'џ'  : 'dž',
+        'ш'  : 'š'
+    }
+
     _serbian_words_with_foreign_character_combinations = [
         "alchajmer",
         "ammar",
@@ -165,6 +243,7 @@ class SerbCyr:
         "ommetar",
         "opho",
         "ophrva",
+        "othoda", # отходати, отходаће
         "othrama",
         "othuknu",
         "pash", # Pasha, jev.
@@ -730,6 +809,9 @@ class SerbCyr:
         }
     }
 
+    def __init__(self):
+        self.lat_regex = re.compile('|'.join(map(re.escape, self._cyrillic_to_latin)))
+
     # Main method that converts Latin text to Cyrillic
     def text_to_cyrillic(self, text):
         if len(text.strip()) == 0:
@@ -743,6 +825,10 @@ class SerbCyr:
                 if not self._looks_like_foreign_word(words[i]):
                     words[i] = self._word_to_cyrillic(words[i])
         return ' '.join(words)
+
+
+    def text_to_latin(self, text):
+        return self.lat_regex.sub(lambda match: self._cyrillic_to_latin[match.group(0)], text)
 
 
     def _looks_like_foreign_word(self, word):
