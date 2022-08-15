@@ -255,6 +255,7 @@ class SerbCyr:
         "poddisciplin",
         "poddomen",
         "poddres",
+        "polushva", # polushvaćen
         "poluurođen",
         "posthumn",
         "posttrans",
@@ -308,6 +309,7 @@ class SerbCyr:
         "cancel",
         "canon",
         "carlsberg",
+        "cd",
         "cisco",
         "clio",
         "cloud",
