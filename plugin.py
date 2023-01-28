@@ -50,6 +50,18 @@ def remove_0width_non_joiner(tree, doctype):
     return retstr.decode('utf-8').replace(u'\u200c', '').replace('&amp;', '&').encode('utf-8')
 
 
+# Handles spaces surrounding string properly.
+# They are important in HTML text
+def text_to_cyr(cyr, stri):
+    ret = ''
+    if stri[0] == ' ':
+        ret = ' '
+    ret = ret + cyr.text_to_cyrillic(stri)
+    if stri[-1] == ' ':
+        ret = ret + ' '
+    return ret
+
+
 # Core function that converts text in HTML elements
 # from Croatian Latin into Serbian Cyrillic script
 def html_lat2cyr(source, cyr, doctype, html_parser):
@@ -62,7 +74,7 @@ def html_lat2cyr(source, cyr, doctype, html_parser):
     if not meta_el:
         # Add META tags that define content
         head_elem = tree.find('head')
-        if head_elem:
+        if head_elem is not None:
             metachr = etree.SubElement(head_elem, 'meta')
             metachr.set(u'http-equiv', u"content-type")
             metachr.set(u'content', u"text/html; charset=utf-8")
@@ -71,10 +83,10 @@ def html_lat2cyr(source, cyr, doctype, html_parser):
     # Walk over tree, changing text nodes
     for elem in tree.getiterator():
         if elem.tag in HTML_TAGS:
-            if elem.text:
-                elem.text = cyr.text_to_cyrillic(elem.text)
-            if elem.tail:
-                elem.tail = cyr.text_to_cyrillic(elem.tail)
+            if elem.text is not None:
+                elem.text = text_to_cyr(cyr, elem.text)
+            if elem.tail is not None:
+                elem.tail = text_to_cyr(cyr, elem.tail)
         if elem.tag in ADD_IF_MISSING_ATTRS:
             for (attr, values) in ADD_IF_MISSING_ATTRS.items():
                 for val in values:
@@ -93,11 +105,7 @@ def html_lat2cyr(source, cyr, doctype, html_parser):
         elif elem.tag == 'svg' and 'xmlns:xlink' not in elem.attrib.keys():
             elem.attrib['xmlns:xlink'] = 'http://www.w3.org/1999/xlink'
     if not has_translit_comment(tree):
-        tree.append(etree.Comment("Пресловљено програмом-додатком '%s'; време %s" % (MODNAME, ts)))
-    try:
-        etree.indent(tree, space='  ')
-    except:
-        pass
+        tree.append(etree.Comment(" Пресловљено програмом-додатком '%s'; време %s " % (MODNAME, ts)))
     # Remove transliteration leftovers
     return remove_0width_non_joiner(tree, doctype)
 
@@ -108,6 +116,7 @@ def has_translit_comment(tree):
         if c.text.find(MODNAME) > -1:
             return True
     return False
+
 
 # Core function that converts text in XML elements
 # from Croatian Latin into Serbian Cyrillic script
@@ -129,7 +138,7 @@ def xml_lat2cyr(source, cyr, doctype=None, xml_parser=None):
             tag = elem.tag
 
         if tag in EBOOK_TAGS:
-            if elem.text:
+            if elem.text is not None:
                 elem.text = cyr.text_to_cyrillic(elem.text)
             # Convert some attributes
             if tag == 'meta' and 'name' in elem.attrib.keys():
@@ -139,11 +148,11 @@ def xml_lat2cyr(source, cyr, doctype=None, xml_parser=None):
         elif tag == 'language':
             elem.text = 'sr'
     if not has_translit_comment(tree):
-        tree.append(etree.Comment("Пресловљено програмом-додатком '%s'; време %s" % (MODNAME, ts)))
+        tree.append(etree.Comment(" Пресловљено програмом-додатком '%s'; време %s " % (MODNAME, ts)))
     try:
         etree.indent(tree, space='  ')
     except:
-        pass
+       pass
     return remove_0width_non_joiner(tree, doctype)
 
 
